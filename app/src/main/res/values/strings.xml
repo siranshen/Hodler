@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Hodler</string>
+
+    <string name="btc_symbol">BTC</string>
+    <string name="eth_symbol">ETH</string>
+
+    <string name="no_data">N/A</string>
+
+    <string name="one_hour">1 H</string>
+    <string name="one_day">1 D</string>
+    <string name="one_week">1 W</string>
+    <string name="one_month">1 M</string>
+    <string name="three_months">3 M</string>
+    <string name="six_months">6 M</string>
+    <string name="one_year">1 Y</string>
+</resources>

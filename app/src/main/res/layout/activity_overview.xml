@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="3"
+    tools:context="com.illegalsimon.hodler.MainActivity">
+
+    <RadioGroup
+        android:id="@+id/rg_symbols"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="10dp">
+
+        <RadioButton
+            android:id="@+id/btn_btc"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btc_symbol"
+            android:buttonTint="@color/colorTopaz"/>
+
+        <RadioButton
+            android:id="@+id/btn_eth"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/eth_symbol"
+            android:buttonTint="@color/colorTopaz"/>
+    </RadioGroup>
+
+    <LinearLayout
+        android:id="@+id/ll_prices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/tv_current_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="@string/no_data"/>
+
+        <TextView
+            android:id="@+id/tv_price_change"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="@string/no_data"
+            android:layout_marginStart="48dp"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2">
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/lc_price_chart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <ProgressBar
+            android:id="@+id/pb_loading_indicator"
+            android:layout_height="42dp"
+            android:layout_width="42dp"
+            android:indeterminateTint="@color/colorSkyblue"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+    </FrameLayout>
+
+    <RadioGroup
+        android:id="@+id/rg_time_ranges"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="7">
+
+        <RadioButton
+            android:id="@+id/btn_one_hour"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:button="@null"
+            android:layout_weight="1"
+            android:text="@string/one_hour"
+            android:textColor="@drawable/custom_radio_button"/>
+
+        <RadioButton
+            android:id="@+id/btn_one_day"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:layout_weight="1"
+            android:text="@string/one_day"
+            android:textColor="@drawable/custom_radio_button"/>
+
+        <RadioButton
+            android:id="@+id/btn_one_week"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:layout_weight="1"
+            android:text="@string/one_week"
+            android:textColor="@drawable/custom_radio_button"/>
+
+        <RadioButton
+            android:id="@+id/btn_one_month"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:layout_weight="1"
+            android:text="@string/one_month"
+            android:textColor="@drawable/custom_radio_button"/>
+
+        <RadioButton
+            android:id="@+id/btn_three_months"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:layout_weight="1"
+            android:text="@string/three_months"
+            android:textColor="@drawable/custom_radio_button"/>
+
+        <RadioButton
+            android:id="@+id/btn_six_months"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:layout_weight="1"
+            android:text="@string/six_months"
+            android:textColor="@drawable/custom_radio_button"/>
+
+        <RadioButton
+            android:id="@+id/btn_one_year"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:layout_weight="1"
+            android:text="@string/one_year"
+            android:textColor="@drawable/custom_radio_button"/>
+    </RadioGroup>
+
+</LinearLayout>
