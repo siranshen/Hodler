@@ -1,5 +1,12 @@
 <resources>
     <string name="app_name">Hodler</string>
+    <string name="activity_overview">Overview</string>
+    <string name="activity_trade">Trading</string>
+
+    <string name="menu_open_website">Website</string>
+
+    <string name="buy">Buy</string>
+    <string name="sell">Sell</string>
 
     <string name="btc_symbol">BTC</string>
     <string name="eth_symbol">ETH</string>

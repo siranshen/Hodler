@@ -37,7 +37,8 @@ public final class NetworkUtils {
         }
     }
 
-    private static final String CRYTOCOMPARE_BASE_URL = "https://min-api.cryptocompare.com/data/";
+    private static final String CRYTOCOMPARE_BASE_URL = "https://www.cryptocompare.com/coins/";
+    private static final String CRYTOCOMPARE_API_BASE_URL = "https://min-api.cryptocompare.com/data/";
 
     private static final String PRICE_URL = "price";
     private static final String HISTORICAL_PRICE_URL = "pricehistorical";
@@ -46,8 +47,12 @@ public final class NetworkUtils {
     private static final String TO_SYMBOL_PARAM = "tsym";
     private static final String TO_SYMBOLS_PARAM = "tsyms";
 
+    public static Uri buildCryptoCompareWebsiteUri(Symbol fromSymbol, Symbol toSymbol) {
+        return Uri.parse(CRYTOCOMPARE_BASE_URL + fromSymbol.getName().toLowerCase() + "/overview/" + toSymbol.getName().toLowerCase());
+    }
+
     public static URL buildPriceHistoryQueryUrl(Symbol fromSymbol, Symbol toSymbol, TimeRange timeRange) {
-        Uri uri = Uri.parse(CRYTOCOMPARE_BASE_URL + chooseTimePrecision(timeRange).getPath()).buildUpon()
+        Uri uri = Uri.parse(CRYTOCOMPARE_API_BASE_URL + chooseTimePrecision(timeRange).getPath()).buildUpon()
                 .appendQueryParameter(FROM_SYMBOL_PARAM, fromSymbol.getName())
                 .appendQueryParameter(TO_SYMBOL_PARAM, toSymbol.getName())
                 .appendQueryParameter("aggregate", chooseAggregateLevel(timeRange))
@@ -58,7 +63,7 @@ public final class NetworkUtils {
     }
 
     public static URL buildCurrentPriceQueryUrl(Symbol fromSymbol, Symbol toSymbol) {
-        Uri uri = Uri.parse(CRYTOCOMPARE_BASE_URL + PRICE_URL).buildUpon()
+        Uri uri = Uri.parse(CRYTOCOMPARE_API_BASE_URL + PRICE_URL).buildUpon()
                 .appendQueryParameter(FROM_SYMBOL_PARAM, fromSymbol.getName())
                 .appendQueryParameter(TO_SYMBOLS_PARAM, toSymbol.getName())
                 .build();
@@ -68,7 +73,7 @@ public final class NetworkUtils {
 
     // This API is only based on daily info: https://www.cryptocompare.com/api/#-api-data-pricehistorical-
     public static URL buildHistoricalPriceQueryUrl(Symbol fromSymbol, Symbol toSymbol, TimeRange timeRange) {
-        Uri uri = Uri.parse(CRYTOCOMPARE_BASE_URL + HISTORICAL_PRICE_URL).buildUpon()
+        Uri uri = Uri.parse(CRYTOCOMPARE_API_BASE_URL + HISTORICAL_PRICE_URL).buildUpon()
                 .appendQueryParameter(FROM_SYMBOL_PARAM, fromSymbol.getName())
                 .appendQueryParameter(TO_SYMBOLS_PARAM, toSymbol.getName())
                 .appendQueryParameter("ts", chooseTimestamp(timeRange))

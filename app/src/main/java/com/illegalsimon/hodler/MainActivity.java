@@ -1,5 +1,6 @@
 package com.illegalsimon.hodler;
 
+import android.content.Intent;
 import android.support.annotation.IdRes;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
@@ -7,8 +8,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -85,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
 
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar_overview));
+
         mSymbolsGroup = (RadioGroup) findViewById(R.id.rg_symbols);
         ((RadioButton) findViewById(DEFAULT_SYMBOL_BTN_ID)).setChecked(true);
         mSymbolsGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -110,12 +116,26 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         mPriceChart = (LineChart) findViewById(R.id.lc_price_chart);
-        mPriceChart.getLegend().setEnabled(false);
-        mPriceChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        setUpPriceChart();
+
+        loadPriceData(BUTTON_SYMBOL_MAP.get(DEFAULT_SYMBOL_BTN_ID), Symbol.USD, BUTTON_TIME_RANGE_MAP.get(DEFAULT_TIME_RANGE_BTN_ID), false);
+    }
+
+    private void setUpPriceChart() {
+        int colorWhite = ContextCompat.getColor(this, R.color.colorWhite);
+        XAxis xAxis = mPriceChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setTextColor(colorWhite);
+        xAxis.setAxisLineColor(colorWhite);
+        xAxis.setAxisLineWidth(1.2f);
+        YAxis axisLeft = mPriceChart.getAxisLeft();
+        axisLeft.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
+        axisLeft.setTextColor(colorWhite);
         mPriceChart.getAxisRight().setEnabled(false);
-        mPriceChart.getAxisLeft().setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
+        mPriceChart.getLegend().setEnabled(false);
         mPriceChart.setScaleEnabled(false);
         mPriceChart.getDescription().setEnabled(false);
+        mPriceChart.setNoDataTextColor(colorWhite);
         mPriceChart.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -136,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
                 String dateStr = mDateFormat.format(new Date(((long) e.getX() + base) * 1000));
                 String completeStr = priceStr + " " + dateStr;
                 SpannableString text = new SpannableString(completeStr);
-                text.setSpan(new RelativeSizeSpan(0.5f), priceStr.length(), completeStr.length(), 0); // set size
+                text.setSpan(new RelativeSizeSpan(0.6f), priceStr.length(), completeStr.length(), 0);
                 mCurrentPriceTextView.setText(text);
                 mPriceChangeTextView.setVisibility(View.GONE);
             }
@@ -144,8 +164,6 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
             @Override
             public void onNothingSelected() {}
         });
-
-        loadPriceData(BUTTON_SYMBOL_MAP.get(DEFAULT_SYMBOL_BTN_ID), Symbol.USD, BUTTON_TIME_RANGE_MAP.get(DEFAULT_TIME_RANGE_BTN_ID), false);
     }
 
     private void loadPriceData(Symbol fromSymbol, Symbol toSymbol, TimeRange timeRange, boolean isReload) {
@@ -216,13 +234,15 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
             dataEntries.add(new Entry(timePrice.getTimestamp() - base, timePrice.getPrice()));
         }
 
-        int lineColor = ContextCompat.getColor(this, R.color.colorTopaz);
+        int colorTopaz = ContextCompat.getColor(this, R.color.colorTopaz);
         LineDataSet dataSet = new LineDataSet(dataEntries, "");
         dataSet.setCircleRadius(1f);
         dataSet.setDrawValues(false);
         dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-        dataSet.setColor(lineColor);
-        dataSet.setCircleColor(lineColor);
+        dataSet.setColor(colorTopaz);
+        dataSet.setCircleColor(colorTopaz);
+        dataSet.setFillColor(colorTopaz);
+        dataSet.setDrawFilled(true);
         mPriceChart.setData(new LineData(dataSet));
         mPriceChart.getXAxis().setValueFormatter(new ChartDateFormatter(data.getTimeRange(), base));
         mPriceChart.invalidate();
@@ -230,6 +250,38 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
 
     @Override
     public void onLoaderReset(Loader<PriceOverview> loader) {}
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.overview, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_open_website) {
+            Intent intent = new Intent(Intent.ACTION_VIEW,
+                    NetworkUtils.buildCryptoCompareWebsiteUri(BUTTON_SYMBOL_MAP.get(mSymbolsGroup.getCheckedRadioButtonId()), Symbol.USD));
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
+        }
+        return true;
+    }
+
+    public void onClickBtnTrade(View view) {
+        Intent intentTrade = new Intent(this, TradingActivity.class);
+        intentTrade.putExtra(TradingActivity.FROM_SYMBOL_KEY, BUTTON_SYMBOL_MAP.get(mSymbolsGroup.getCheckedRadioButtonId()));
+        intentTrade.putExtra(TradingActivity.TO_SYMBOL_KEY, Symbol.USD);
+
+        int btnId = view.getId();
+        if (btnId == R.id.btn_buy) {
+            intentTrade.putExtra(TradingActivity.IS_BUY_KEY, true);
+        } else if (btnId == R.id.btn_sell) {
+            intentTrade.putExtra(TradingActivity.IS_BUY_KEY, false);
+        }
+        startActivity(intentTrade);
+    }
 
     private void setPriceViewToCurrent() {
         mCurrentPriceTextView.setText(String.format(Locale.US, "$%.2f", currentPrice));
