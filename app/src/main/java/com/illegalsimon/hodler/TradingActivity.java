@@ -24,28 +24,21 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
 
     private TabLayout mTabs;
     private ViewPager mViewPager;
-    private boolean isBuy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trading);
 
-        Intent intent = getIntent();
-        if (intent.hasExtra(IS_BUY_KEY)) {
-            isBuy = intent.getBooleanExtra(IS_BUY_KEY, false);
-        } else {
-            throw new RuntimeException("Trade type not specified");
-        }
-
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar_trading));
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(isBuy ? "Buy" : "Sell");
+            getSupportActionBar().setTitle("Trading");
         }
 
+        Intent intent = getIntent();
         mViewPager = (ViewPager) findViewById(R.id.vp_trading_pairs);
-        setupViewPager((Symbol) intent.getSerializableExtra(FROM_SYMBOL_KEY), (Symbol) intent.getSerializableExtra(TO_SYMBOL_KEY));
+        setupViewPager(intent.getBooleanExtra(IS_BUY_KEY, false), (Symbol) intent.getSerializableExtra(FROM_SYMBOL_KEY), (Symbol) intent.getSerializableExtra(TO_SYMBOL_KEY));
 
         mTabs = (TabLayout) findViewById(R.id.tabs_trading);
         mTabs.setupWithViewPager(mViewPager);
@@ -63,24 +56,12 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
         });
     }
 
-    private void setupViewPager(Symbol fromSymbol, Symbol toSymbol) {
+    private void setupViewPager(boolean isBuy, Symbol fromSymbol, Symbol toSymbol) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        String targetPair = String.format("%s%s%s", fromSymbol.getName(), isBuy ? "<-" : "->", toSymbol.getName());
-        String[] tradePairs = getTradePairs();
-        int targetIndex = 0;
-        for (int i = 0; i < tradePairs.length; i++) {
-            String pair = tradePairs[i];
-            adapter.addFragment(new TradingFragment(), pair);
-            if (pair.equals(targetPair)) {
-                targetIndex = i;
-            }
-        }
+        adapter.addFragment(TradingFragment.newInstance(true, fromSymbol, toSymbol), "Buy");
+        adapter.addFragment(TradingFragment.newInstance(false, fromSymbol, toSymbol), "Sell");
         mViewPager.setAdapter(adapter);
-        mViewPager.setCurrentItem(targetIndex);
-    }
-
-    private String[] getTradePairs() {
-        return isBuy ? new String[] { "BTC<-USD", "ETH<-USD", "ETH<-BTC" } : new String[] { "BTC->USD", "ETH->USD", "ETH->BTC" };
+        mViewPager.setCurrentItem(isBuy ? 0 : 1);
     }
 
     @Override

@@ -3,10 +3,16 @@ package com.illegalsimon.hodler;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
+
+import com.illegalsimon.hodler.data.Symbol;
 
 
 /**
@@ -18,35 +24,39 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class TradingFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String IS_BUY_KEY = "IS_BUY"; // Trade type of the fragment
+    private static final String FROM_SYMBOL_KEY = "FROM_SYMBOL";
+    private static final String TO_SYMBOL_KEY = "TO_SYMBOL";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    public static final String LEFT_ARROW = "<-";
+    public static final String RIGHT_ARROW = "->";
+    public static final String[][] BASE_TRADING_PAIRS = new String[][] {
+            { Symbol.BTC.getName(), Symbol.USD.getName() },
+            { Symbol.ETH.getName(), Symbol.USD.getName() },
+            { Symbol.ETH.getName(), Symbol.BTC.getName() }
+    };
 
+    public static final String[] ORDER_TYPES = new String[] { "Limit", "Maker-or-cancel", "Immediate-or-cancel", "auction-only" };
+
+    private boolean isBuy;
+
+    private Spinner mTradingPairSpinner;
+    private Spinner mOrderTypeSpinner;
+    private EditText mPriceEditText;
+    private EditText mQuantityEditText;
+    private EditText mTotalEditText;
     private OnFragmentInteractionListener mListener;
 
     public TradingFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment TradingFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static TradingFragment newInstance(String param1, String param2) {
+    public static TradingFragment newInstance(boolean isBuy, Symbol fromSymbol, Symbol toSymbol) {
         TradingFragment fragment = new TradingFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putBoolean(IS_BUY_KEY, isBuy);
+        args.putSerializable(FROM_SYMBOL_KEY, fromSymbol);
+        args.putSerializable(TO_SYMBOL_KEY, toSymbol);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,10 +64,10 @@ public class TradingFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+        if (getArguments() == null || !getArguments().containsKey(IS_BUY_KEY)) {
+            throw new RuntimeException("TradingFragment must have a trade type");
         }
+        isBuy = getArguments().getBoolean(IS_BUY_KEY);
     }
 
     @Override
@@ -65,6 +75,34 @@ public class TradingFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_trading, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        Symbol fromSymbol = (Symbol) getArguments().get(FROM_SYMBOL_KEY);
+        if (fromSymbol == null) fromSymbol = Symbol.BTC;
+        Symbol toSymbol = (Symbol) getArguments().get(TO_SYMBOL_KEY);
+        if (toSymbol == null) toSymbol = Symbol.USD;
+
+        mTradingPairSpinner = view.findViewById(R.id.spinner_trade_pair);
+        mOrderTypeSpinner = view.findViewById(R.id.spinner_order_type);
+        mPriceEditText = view.findViewById(R.id.et_price);
+        mQuantityEditText = view.findViewById(R.id.et_quantity);
+        mTotalEditText = view.findViewById(R.id.et_total);
+
+        String[] tradingPairTitles = getTradingPairTitles();
+        ArrayAdapter<String> tradingPairAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner, tradingPairTitles);
+        mTradingPairSpinner.setAdapter(tradingPairAdapter);
+        for (int i = 0; i < tradingPairTitles.length; i++) {
+            if (tradingPairTitles[i].equals(String.format("%s %s %s", fromSymbol.getName(), isBuy ? LEFT_ARROW : RIGHT_ARROW, toSymbol.getName()))) {
+                mTradingPairSpinner.setSelection(i);
+            }
+        }
+
+        ArrayAdapter<String> orderTypesAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner, ORDER_TYPES);
+        mOrderTypeSpinner.setAdapter(orderTypesAdapter);
+
+        super.onViewCreated(view, savedInstanceState);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -80,8 +118,7 @@ public class TradingFragment extends Fragment {
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
         }
     }
 
@@ -89,6 +126,15 @@ public class TradingFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    private String[] getTradingPairTitles() {
+        String[] pairs = new String[BASE_TRADING_PAIRS.length];
+        String arrow = isBuy ? LEFT_ARROW : RIGHT_ARROW;
+        for (int i = 0; i < BASE_TRADING_PAIRS.length; i++) {
+            pairs[i] = String.format("%s %s %s", BASE_TRADING_PAIRS[i][0], arrow, BASE_TRADING_PAIRS[i][1]);
+        }
+        return pairs;
     }
 
     /**

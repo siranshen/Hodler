@@ -17,7 +17,7 @@
         <item name="android:textColor">@drawable/custom_radio_button</item>
     </style>
 
-    <style name="TradeButtonStyle">
+    <style name="BaseButtonStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
@@ -34,6 +34,23 @@
         <item name="android:textColorSecondary">@color/colorWhite</item>
         <item name="android:popupBackground">@color/colorPrimaryDark</item>
         <item name="actionMenuTextColor">@color/colorWhite</item>
+    </style>
+
+    <style name="BaseTradingLabelStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:fontFeatureSettings">smcp</item>
+    </style>
+
+    <style name="BaseTradingEditTextStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:inputType">numberDecimal</item>
+        <item name="android:paddingTop">6dp</item>
     </style>
 
 </resources>
