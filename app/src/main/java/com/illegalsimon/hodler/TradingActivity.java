@@ -1,7 +1,6 @@
 package com.illegalsimon.hodler;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -10,9 +9,12 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
 import com.illegalsimon.hodler.data.Symbol;
+import com.illegalsimon.hodler.utils.NetworkUtils;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +67,8 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {}
+    public void onPlaceOrder(String pairSymbol, double price, double amount, String orderType) {
+    }
 
     private class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();

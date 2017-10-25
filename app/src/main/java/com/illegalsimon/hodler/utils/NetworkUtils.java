@@ -1,17 +1,27 @@
 package com.illegalsimon.hodler.utils;
 
 import android.net.Uri;
+import android.util.Base64;
 import android.util.Log;
 
 import com.illegalsimon.hodler.data.Symbol;
 import com.illegalsimon.hodler.data.TimeRange;
 
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Scanner;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Created by shens on 10/14/2017.
@@ -46,6 +56,9 @@ public final class NetworkUtils {
     private static final String FROM_SYMBOL_PARAM = "fsym";
     private static final String TO_SYMBOL_PARAM = "tsym";
     private static final String TO_SYMBOLS_PARAM = "tsyms";
+
+    private static final String GEMINI_API_KEY = "W6Ddjic5QhmGvZOVtJck";
+    private static final String GEMINI_API_SECRET = "YDNzZ7DC5ABTyP8at51FzmSaP8o";
 
     public static Uri buildCryptoCompareWebsiteUri(Symbol fromSymbol, Symbol toSymbol) {
         return Uri.parse(CRYTOCOMPARE_BASE_URL + fromSymbol.getName().toLowerCase() + "/overview/" + toSymbol.getName().toLowerCase());
@@ -83,15 +96,55 @@ public final class NetworkUtils {
     }
 
     public static String getResponseFromUrl(URL url) throws IOException {
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         try {
-            Scanner scanner = new Scanner(urlConnection.getInputStream());
+            InputStream in = new BufferedInputStream(connection.getInputStream());
+            Scanner scanner = new Scanner(in);
             scanner.useDelimiter("\\A");
 
             return scanner.hasNext() ? scanner.next() : null;
         } finally {
-            urlConnection.disconnect();
+            connection.disconnect();
         }
+    }
+
+    private static final String HMAC_SHA384 = "HmacSHA384";
+
+    public static String getGeminiPrivateResponseFromUrl(URL url, String jsonData) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoInput(true);
+
+        try {
+            final byte[] encodedJson = Base64.encode(jsonData.getBytes("US-ASCII"), Base64.NO_WRAP);
+            final Mac sha_hmac = Mac.getInstance(HMAC_SHA384);
+            sha_hmac.init(new SecretKeySpec(GEMINI_API_SECRET.getBytes("UTF-8"), HMAC_SHA384));
+            connection.setRequestMethod("POST");
+            connection.setUseCaches(false);
+            connection.setRequestProperty("Content-Length", "0");
+            connection.setRequestProperty("Content-Type", "text/plain");
+            connection.setRequestProperty("X-GEMINI-APIKEY", GEMINI_API_KEY);
+            connection.setRequestProperty("X-GEMINI-PAYLOAD", new String(encodedJson));
+            connection.setRequestProperty("X-GEMINI-SIGNATURE", bytesToHex(sha_hmac.doFinal(encodedJson)));
+
+            InputStream in = new BufferedInputStream(connection.getInputStream());
+            Scanner scanner = new Scanner(in);
+            scanner.useDelimiter("\\A");
+
+            return scanner.hasNext() ? scanner.next() : null;
+        } finally {
+            connection.disconnect();
+        }
+    }
+
+    private final static char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
+    private static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int i = 0; i < bytes.length; i++) {
+            int v = bytes[i] & 0xFF;
+            hexChars[i * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[i * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     private static URL toUrl(Uri uri) {

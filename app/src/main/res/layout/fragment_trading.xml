@@ -16,7 +16,7 @@
         <TextView
             android:id="@+id/tv_trade_pair_label"
             style="@style/BaseTradingLabelStyle"
-            android:text="Trading pair"/>
+            android:text="trading pair"/>
 
         <Spinner
             android:id="@+id/spinner_trade_pair"
@@ -27,7 +27,7 @@
         <TextView
             android:id="@+id/tv_order_type_label"
             style="@style/BaseTradingLabelStyle"
-            android:text="Order type"/>
+            android:text="order type"/>
 
         <Spinner
             android:id="@+id/spinner_order_type"
@@ -38,7 +38,7 @@
         <TextView
             android:id="@+id/tv_price_label"
             style="@style/BaseTradingLabelStyle"
-            android:text="Price"/>
+            android:text="price"/>
 
         <EditText
             android:id="@+id/et_price"
@@ -47,7 +47,7 @@
         <TextView
             android:id="@+id/tv_quantity_label"
             style="@style/BaseTradingLabelStyle"
-            android:text="Quantity"/>
+            android:text="quantity"/>
 
         <EditText
             android:id="@+id/et_quantity"
@@ -56,29 +56,46 @@
         <TextView
             android:id="@+id/tv_total_label"
             style="@style/BaseTradingLabelStyle"
-            android:text="Total"/>
+            android:text="total"/>
 
         <EditText
             android:id="@+id/et_total"
             style="@style/BaseTradingEditTextStyle"/>
 
         <Button
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            android:layout_gravity="center"
-            android:textColor="@drawable/custom_button"
-            android:text="Check my open orders"/>
-
-        <Button
-            android:id="@+id/button"
+            android:id="@+id/btn_place_order"
             style="@style/BaseButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="35dp"
             android:layout_marginEnd="35dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginTop="35dp"
             android:text="Place Order"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp">
+
+            <Button
+                android:id="@+id/btn_gemini_order_book"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="13sp"
+                android:textColor="@drawable/custom_button"
+                android:text="Gemini order book"/>
+
+            <Button
+                android:id="@+id/btn_open_orders"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="13sp"
+                android:textColor="@drawable/custom_button"
+                android:text="My open orders"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
