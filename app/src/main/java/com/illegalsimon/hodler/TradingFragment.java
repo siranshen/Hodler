@@ -1,35 +1,50 @@
 package com.illegalsimon.hodler;
 
 import android.content.Context;
-import android.net.Uri;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
+import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.RelativeSizeSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.illegalsimon.hodler.data.Symbol;
+import com.illegalsimon.hodler.utils.NetworkUtils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link TradingFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link TradingFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class TradingFragment extends Fragment implements View.OnClickListener, TextWatcher {
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
+
+public class TradingFragment extends Fragment implements TextWatcher, AdapterView.OnItemSelectedListener, LoaderManager.LoaderCallbacks<String> {
+    private static final String TAG = TradingFragment.class.getSimpleName();
+
     private static final String IS_BUY_KEY = "IS_BUY"; // Trade type of the fragment
     private static final String FROM_SYMBOL_KEY = "FROM_SYMBOL";
     private static final String TO_SYMBOL_KEY = "TO_SYMBOL";
+    private static final String URL_KEY = "URL";
+    private static final String JSON_KEY = "JSON";
 
     private static final int CRYPTO_DECIMAL_PLACES = 6;
     private static final String LEFT_ARROW = "<-";
@@ -40,18 +55,20 @@ public class TradingFragment extends Fragment implements View.OnClickListener, T
             { Symbol.ETH.getName(), Symbol.BTC.getName() }
     };
 
-    public static final String[] ORDER_TYPES = new String[] { "Limit", "Maker-or-cancel", "Immediate-or-cancel", "Auction-only" };
+    public static final String[] ORDER_TYPES = new String[] { "Limit", "Maker-or-Cancel", "Immediate-or-Cancel", "Auction-Only" };
 
     private boolean isBuy;
     private Symbol toSymbol;
     private String[] tradingPairTitles;
 
+    private TextView mLastPriceText;
     private Spinner mTradingPairSpinner;
     private Spinner mOrderTypeSpinner;
     private EditText mPriceEditText;
     private EditText mQuantityEditText;
     private EditText mTotalEditText;
-    private OnFragmentInteractionListener mListener;
+    private Button mPlaceOrderBtn;
+    private OnTradingFragmentInteractionListener mListener;
 
     public TradingFragment() {
         // Required empty public constructor
@@ -93,6 +110,7 @@ public class TradingFragment extends Fragment implements View.OnClickListener, T
         toSymbol = (Symbol) getArguments().get(TO_SYMBOL_KEY);
         if (toSymbol == null) toSymbol = Symbol.USD;
 
+        mLastPriceText = view.findViewById(R.id.tv_last_price);
         mTradingPairSpinner = view.findViewById(R.id.spinner_trade_pair);
         mOrderTypeSpinner = view.findViewById(R.id.spinner_order_type);
         mPriceEditText = view.findViewById(R.id.et_price);
@@ -110,28 +128,37 @@ public class TradingFragment extends Fragment implements View.OnClickListener, T
                 mTradingPairSpinner.setSelection(i);
             }
         }
+        isProgrammatic = true;
+        mTradingPairSpinner.setOnItemSelectedListener(this);
 
         ArrayAdapter<String> orderTypesAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner, ORDER_TYPES);
         mOrderTypeSpinner.setAdapter(orderTypesAdapter);
 
-        view.findViewById(R.id.btn_gemini_order_book).setOnClickListener(this);
-        view.findViewById(R.id.btn_open_orders).setOnClickListener(this);
-        view.findViewById(R.id.btn_place_order).setOnClickListener(this);
+        mPlaceOrderBtn = view.findViewById(R.id.btn_place_order);
+        mPlaceOrderBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickPlaceOrderBtn();
+            }
+        });
 
         super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_place_order:
-                onClickPlaceOrderBtn();
-                break;
-            case R.id.btn_gemini_order_book:
-                break;
-            case R.id.btn_open_orders:
-                break;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnTradingFragmentInteractionListener) {
+            mListener = (OnTradingFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnTradingFragmentInteractionListener");
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     private void onClickPlaceOrderBtn() {
@@ -147,30 +174,72 @@ public class TradingFragment extends Fragment implements View.OnClickListener, T
             Toast.makeText(getContext().getApplicationContext(), "Improper order", Toast.LENGTH_SHORT).show();
             return;
         }
-
         mQuantityEditText.setText(String.valueOf(quantityDouble)); // This will trigger TextWatcher
-        priceDouble = Double.valueOf(mPriceEditText.getText().toString());
 
+        price = mPriceEditText.getText().toString();
         String[] tradingPair = BASE_TRADING_PAIRS[mTradingPairSpinner.getSelectedItemPosition()];
         String orderType = mOrderTypeSpinner.getSelectedItem().toString();
 
-        mListener.onPlaceOrder(tradingPair[0].toLowerCase() + tradingPair[1].toLowerCase(), priceDouble, quantityDouble, orderType);
+        String confirmationMessage = String.format(Locale.US, "You are about to place %s %s %s order for %s %s at a price of %s per %s.",
+                getArticle(orderType), orderType, isBuy ? "buy" : "sell",
+                mQuantityEditText.getText().toString(), tradingPair[0],
+                tradingPair[1].equals(Symbol.USD.getName()) ? "$" + price : price + " " + tradingPair[1], tradingPair[0]);
+
+        new AlertDialog.Builder(getContext(), R.style.CustomAlertDialogStyle).setTitle("Placing order").setMessage(confirmationMessage)
+                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        onPlaceOrder();
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .show();
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+    // A very crude article decider
+    private String getArticle(String str) {
+        char firstChar = str.toLowerCase().charAt(0);
+        if (firstChar == 'a' || firstChar == 'e' || firstChar == 'i' || firstChar == 'o' || firstChar == 'u') return "an";
+        return "a";
+    }
+
+    private void onPlaceOrder() {
+        String[] tradingPair = BASE_TRADING_PAIRS[mTradingPairSpinner.getSelectedItemPosition()];
+        String orderType = mOrderTypeSpinner.getSelectedItem().toString();
+
+        JSONObject jsonRequest = new JSONObject();
+        try {
+            jsonRequest.put("symbol", tradingPair[0].toLowerCase() + tradingPair[1].toLowerCase());
+            jsonRequest.put("amount", mQuantityEditText.getText().toString());
+            jsonRequest.put("price", mPriceEditText.getText().toString());
+            jsonRequest.put("side", isBuy ? "buy" : "sell");
+            jsonRequest.put("type", "exchange limit");
+            if (!orderType.equals(TradingFragment.ORDER_TYPES[0])) {
+                // https://docs.gemini.com/rest-api/#new-order
+                jsonRequest.put("options", new JSONArray(Collections.singletonList(orderType.toLowerCase())));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-    }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+        Bundle args = new Bundle();
+        args.putString(URL_KEY, "/v1/order/new");
+        args.putString(JSON_KEY, jsonRequest.toString());
+
+        int loaderId = TradingActivity.GEMINI_PRIVATE_LOADER_ID;
+        LoaderManager loaderManager = getActivity().getSupportLoaderManager();
+
+        if (loaderManager.getLoader(loaderId) == null) {
+            loaderManager.initLoader(loaderId, args, this);
+        } else {
+            loaderManager.restartLoader(loaderId, args, this);
+        }
     }
 
     @Override
@@ -188,7 +257,7 @@ public class TradingFragment extends Fragment implements View.OnClickListener, T
         if (price.isEmpty() || quantity.isEmpty())
             return;
 
-        int decimalPlaces = toSymbol == Symbol.USD ? 2 : CRYPTO_DECIMAL_PLACES;
+        int decimalPlaces = mTradingPairSpinner.getSelectedItemPosition() == 2 ? CRYPTO_DECIMAL_PLACES : 2;
 
         if (editable == mPriceEditText.getText()) {
             Double totalDouble = Double.valueOf(price) * Double.valueOf(quantity);
@@ -215,17 +284,98 @@ public class TradingFragment extends Fragment implements View.OnClickListener, T
         return Math.round(number * helperDouble) / helperDouble;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        void onPlaceOrder(String pairSymbol, double price, double amount, String orderType);
+    // onItemSelected fires off when setOnItemSelectedListener and setSelection
+    private boolean isProgrammatic = true;
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        if (isProgrammatic) {
+            isProgrammatic = false;
+            return;
+        }
+        mLastPriceText.setText(getString(R.string.loading_text));
+        String[] tradingPair = BASE_TRADING_PAIRS[i];
+        if (mListener != null) mListener.onTradingPairChanged(isBuy, i, tradingPair[0].toLowerCase() + tradingPair[1].toLowerCase());
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {}
+
+    @Override
+    public Loader<String> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<String>(getContext()) {
+
+            @Override
+            protected void onStartLoading() {
+                mPlaceOrderBtn.setEnabled(false);
+                forceLoad();
+            }
+
+            @Override
+            public String loadInBackground() {
+                String url = args.getString(URL_KEY);
+                String jsonRequest = args.getString(JSON_KEY);
+                try {
+                    return NetworkUtils.getGeminiPrivateResponseFromUrl(url, jsonRequest);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<String> loader, String data) {
+        Log.d(TAG, data);
+        int loaderId = TradingActivity.GEMINI_PRIVATE_LOADER_ID;
+        if (getActivity().getSupportLoaderManager().getLoader(loaderId) != null) {
+            // Destroying loader as it seems to load twice on resume
+            getActivity().getSupportLoaderManager().destroyLoader(loaderId);
+        }
+
+        Toast errorMessage = Toast.makeText(getContext().getApplicationContext(), "Sorry, something went wrong...", Toast.LENGTH_LONG);
+        if (data == null) {
+            errorMessage.show();
+        } else {
+            try {
+                JSONObject jsonResponse = new JSONObject(data);
+                if (jsonResponse.has("order_id")) {
+                    setEditTextViewText(mPriceEditText, "");
+                    setEditTextViewText(mQuantityEditText, "0");
+                    setEditTextViewText(mTotalEditText, "");
+                    Toast.makeText(getContext().getApplicationContext(), "Your order has been successfully placed!", Toast.LENGTH_LONG).show();
+                } else if (jsonResponse.has("result") && jsonResponse.getString("result").equals("error")) {
+                    if (jsonResponse.has("message")) {
+                        Toast.makeText(getContext().getApplicationContext(), jsonResponse.getString("message"), Toast.LENGTH_LONG).show();
+                    } else {
+                        errorMessage.show();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                errorMessage.show();
+            }
+        }
+        mPlaceOrderBtn.setEnabled(true);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<String> loader) {}
+
+    public void updateTradingPair(int position) {
+        isProgrammatic = true;
+        mTradingPairSpinner.setSelection(position, false);
+    }
+
+    public void updateLastPrice(String price) {
+        String completeStr = price + " " + new SimpleDateFormat("M/d/YYYY HH:mm:ss", Locale.US).format(new Date());
+        SpannableString text = new SpannableString(completeStr);
+        text.setSpan(new RelativeSizeSpan(0.8f), price.length(), completeStr.length(), 0);
+        mLastPriceText.setText(text);
+    }
+
+    interface OnTradingFragmentInteractionListener {
+        void onTradingPairChanged(boolean isBuy, int position, String tradingPair);
     }
 }

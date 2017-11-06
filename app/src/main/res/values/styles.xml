@@ -3,7 +3,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:windowBackground">@color/colorPrimary</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -23,7 +23,7 @@
         <item name="android:layout_weight">1</item>
         <item name="android:layout_marginStart">10dp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColor">@color/text_color_with_disabled</item>
         <item name="android:textSize">18sp</item>
         <item name="android:background">@drawable/trade_button</item>
     </style>
@@ -49,8 +49,15 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">17sp</item>
+        <item name="android:colorAccent">@color/colorTopaz</item>
         <item name="android:inputType">numberDecimal</item>
         <item name="android:paddingTop">6dp</item>
+    </style>
+
+    <style name="CustomAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:textColorPrimary">@color/colorWhite</item> <!-- title and text -->
+        <item name="android:colorAccent">@color/colorTopaz</item> <!-- button -->
+        <item name="android:background">#131313</item>
     </style>
 
 </resources>

@@ -7,6 +7,12 @@
             <stroke android:width="4dp" android:color="@color/colorTopaz" />
         </shape>
     </item>
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <corners android:radius="3dp" />
+            <stroke android:width="4dp" android:color="@color/colorTransparentTopaz" />
+        </shape>
+    </item>
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="3dp" />

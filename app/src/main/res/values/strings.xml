@@ -20,4 +20,6 @@
     <string name="three_months">3 M</string>
     <string name="six_months">6 M</string>
     <string name="one_year">1 Y</string>
+
+    <string name="loading_text">Loading...</string>
 </resources>
