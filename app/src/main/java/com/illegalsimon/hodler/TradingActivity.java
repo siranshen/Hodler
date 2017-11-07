@@ -44,7 +44,6 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
     private ScheduledExecutorService mScheduler;
     private ScheduledFuture lastSchedule;
 
-    private TabLayout mTabs;
     private ViewPager mViewPager;
 
     @Override
@@ -64,7 +63,7 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
         mViewPager = (ViewPager) findViewById(R.id.vp_trading_pairs);
         setupViewPager(intent.getBooleanExtra(IS_BUY_KEY, false), fromSymbol, toSymbol);
 
-        mTabs = (TabLayout) findViewById(R.id.tabs_trading);
+        TabLayout mTabs = (TabLayout) findViewById(R.id.tabs_trading);
         mTabs.setupWithViewPager(mViewPager);
         mTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -80,15 +79,26 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
         });
 
         if (mScheduler == null) mScheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduleLoader(fromSymbol.getName().toLowerCase() + toSymbol.getName().toLowerCase());
     }
 
     private void setupViewPager(boolean isBuy, Symbol fromSymbol, Symbol toSymbol) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), fromSymbol.getName().toLowerCase() + toSymbol.getName().toLowerCase());
         adapter.addFragment(TradingFragment.newInstance(true, fromSymbol, toSymbol), "Buy");
         adapter.addFragment(TradingFragment.newInstance(false, fromSymbol, toSymbol), "Sell");
         mViewPager.setAdapter(adapter);
         mViewPager.setCurrentItem(getFragmentPosition(isBuy));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        scheduleLoader(((ViewPagerAdapter) mViewPager.getAdapter()).mTradingPair);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (lastSchedule != null) lastSchedule.cancel(true);
     }
 
     @Override
@@ -148,16 +158,16 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
 
     @Override
     public void onTradingPairChanged(boolean isBuy, int position, String tradingPair) {
-        Fragment otherFragment = ((ViewPagerAdapter) mViewPager.getAdapter()).mFragments.get(getFragmentPosition(!isBuy));
+        ViewPagerAdapter adapter = (ViewPagerAdapter) mViewPager.getAdapter();
+        Fragment otherFragment = adapter.mFragments.get(getFragmentPosition(!isBuy));
         if (otherFragment instanceof TradingFragment) ((TradingFragment) otherFragment).updateTradingPair(position);
+        adapter.mTradingPair = tradingPair;
 
         scheduleLoader(tradingPair);
     }
 
     private void scheduleLoader(final String tradingPair) {
-        if (lastSchedule != null) {
-            lastSchedule.cancel(true);
-        }
+        if (lastSchedule != null) lastSchedule.cancel(true);
 
         lastSchedule = mScheduler.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -176,9 +186,11 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
     private class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragments = new ArrayList<>();
         private final List<String> mFragmentTitles = new ArrayList<>();
+        private String mTradingPair;
 
-        ViewPagerAdapter(FragmentManager manager) {
+        ViewPagerAdapter(FragmentManager manager, String tradingPair) {
             super(manager);
+            mTradingPair = tradingPair;
         }
 
         @Override
@@ -202,7 +214,7 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
         }
     }
 
-    private int getFragmentPosition(boolean isBuy) {
+    private static int getFragmentPosition(boolean isBuy) {
         return isBuy ? 0 : 1;
     }
 }
