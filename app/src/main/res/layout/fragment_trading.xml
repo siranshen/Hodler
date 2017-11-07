@@ -14,7 +14,7 @@
         android:layout_marginBottom="30dp">
 
         <TextView
-            style="@style/BaseTradingLabelStyle"
+            style="@style/BaseLabelStyle"
             android:text="gemini last price"/>
 
         <TextView
@@ -28,7 +28,7 @@
 
         <TextView
             android:id="@+id/tv_trade_pair_label"
-            style="@style/BaseTradingLabelStyle"
+            style="@style/BaseLabelStyle"
             android:text="trading pair"/>
 
         <Spinner
@@ -39,7 +39,7 @@
 
         <TextView
             android:id="@+id/tv_order_type_label"
-            style="@style/BaseTradingLabelStyle"
+            style="@style/BaseLabelStyle"
             android:text="order type"/>
 
         <Spinner
@@ -50,7 +50,7 @@
 
         <TextView
             android:id="@+id/tv_price_label"
-            style="@style/BaseTradingLabelStyle"
+            style="@style/BaseLabelStyle"
             android:text="price"/>
 
         <EditText
@@ -59,7 +59,7 @@
 
         <TextView
             android:id="@+id/tv_quantity_label"
-            style="@style/BaseTradingLabelStyle"
+            style="@style/BaseLabelStyle"
             android:text="quantity"/>
 
         <EditText
@@ -68,7 +68,7 @@
 
         <TextView
             android:id="@+id/tv_total_label"
-            style="@style/BaseTradingLabelStyle"
+            style="@style/BaseLabelStyle"
             android:text="total"/>
 
         <EditText

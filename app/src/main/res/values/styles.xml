@@ -29,14 +29,13 @@
     </style>
 
     <style name="BaseToolbarStyle">
-        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:colorBackground">@color/colorPrimary</item>
         <item name="android:textColorPrimary">@color/colorWhite</item>
         <item name="android:textColorSecondary">@color/colorWhite</item>
-        <item name="android:popupBackground">@color/colorPrimaryDark</item>
         <item name="actionMenuTextColor">@color/colorWhite</item>
     </style>
 
-    <style name="BaseTradingLabelStyle">
+    <style name="BaseLabelStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">12dp</item>

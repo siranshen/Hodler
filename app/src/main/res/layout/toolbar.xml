@@ -5,4 +5,4 @@
     android:layout_width="match_parent"
     android:layout_height="?actionBarSize"
     app:theme="@style/BaseToolbarStyle"
-    app:popupTheme="@style/Theme.AppCompat.DayNight"/>
+    app:popupTheme="@style/ThemeOverlay.AppCompat.Dark"/>

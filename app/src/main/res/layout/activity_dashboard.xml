@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.illegalsimon.hodler.DashboardActivity">
+
+    <include
+        android:id="@+id/toolbar_dashboard"
+        layout="@layout/toolbar"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
+            android:layout_marginBottom="30dp">
+
+            <TextView
+                android:id="@+id/tv_balances_label"
+                style="@style/BaseLabelStyle"
+                android:text="account values"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="USD Balance"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="BTC Balance"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ETH Balance"/>
+
+            <TextView
+                android:id="@+id/tv_open_orders_label"
+                style="@style/BaseLabelStyle"
+                android:text="buy orders"/>
+
+            <TextView
+                android:id="@+id/tv_sell_orders_label"
+                style="@style/BaseLabelStyle"
+                android:text="sell orders"/>
+
+            <TextView
+                android:id="@+id/tv_transaction_history_label"
+                style="@style/BaseLabelStyle"
+                android:text="transaction history"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="> Load"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

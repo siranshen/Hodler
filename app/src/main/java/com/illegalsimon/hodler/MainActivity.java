@@ -260,12 +260,15 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_open_website) {
+        int selectedId = item.getItemId();
+        if (selectedId == R.id.menu_open_website) {
             Intent intent = new Intent(Intent.ACTION_VIEW,
                     NetworkUtils.buildCryptoCompareWebsiteUri(BUTTON_SYMBOL_MAP.get(mSymbolsGroup.getCheckedRadioButtonId()), Symbol.USD));
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivity(intent);
             }
+        } else if (selectedId == R.id.menu_dashboard) {
+            startActivity(new Intent(this, DashboardActivity.class));
         }
         return true;
     }

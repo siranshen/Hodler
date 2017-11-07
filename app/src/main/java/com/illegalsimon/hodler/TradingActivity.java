@@ -12,8 +12,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 
 import com.illegalsimon.hodler.data.Symbol;
 import com.illegalsimon.hodler.utils.NetworkUtils;
@@ -103,7 +103,17 @@ public class TradingActivity extends AppCompatActivity implements TradingFragmen
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.trading, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_dashboard) {
+            startActivity(new Intent(this, DashboardActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**

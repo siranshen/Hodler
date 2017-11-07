@@ -25,6 +25,13 @@
         <activity
             android:name=".TradingActivity"
             android:label="@string/activity_trade"
+            android:launchMode="singleTop"
+            android:parentActivityName=".MainActivity">
+        </activity>
+        <activity
+            android:name=".DashboardActivity"
+            android:label="@string/dashboard"
+            android:launchMode="singleTop"
             android:parentActivityName=".MainActivity">
         </activity>
     </application>
