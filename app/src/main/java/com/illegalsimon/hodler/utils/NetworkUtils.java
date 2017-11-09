@@ -50,7 +50,7 @@ public final class NetworkUtils {
         }
     }
 
-    private static final int TIMEOUT_VALUE = 2000; // 2 seconds
+    private static final int TIMEOUT_VALUE = 6000; // 6 seconds
 
     private static final String CRYTOCOMPARE_BASE_URL = "https://www.cryptocompare.com/coins/";
     private static final String CRYTOCOMPARE_API_BASE_URL = "https://min-api.cryptocompare.com/data/";

@@ -11,4 +11,5 @@
     <color name="colorSkyblue">#00BFFF</color>
     <color name="colorTopaz">#0198E1</color>
     <color name="colorTransparentTopaz">#880198E1</color>
+    <color name="colorLightGray">#dedede</color>
 </resources>

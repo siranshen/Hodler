@@ -1,6 +1,7 @@
 package com.illegalsimon.hodler;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.IdRes;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
@@ -9,6 +10,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 import android.util.Log;
@@ -226,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
         mPriceChart.setVisibility(View.VISIBLE);
 
         currentPrice = data.getCurrentPrice();
-        priceChange = currentPrice - data.getOpenPrice();
+        priceChange = ((currentPrice - data.getOpenPrice()) / data.getOpenPrice()) * 100;
         setPriceViewToCurrent();
 
         List<Entry> dataEntries = new ArrayList<>();
@@ -289,6 +291,18 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
 
     private void setPriceViewToCurrent() {
         mCurrentPriceTextView.setText(String.format(Locale.US, "$%.2f", currentPrice));
-        mPriceChangeTextView.setText(String.format(Locale.US, priceChange > 0 ? "+%.2f" : "%.2f", priceChange));
+        int textColor = 0;
+        String sign;
+        if (priceChange > 0) {
+            sign = "<font color='#00ff00'>\u25B2</font>";
+            textColor = Color.GREEN;
+        } else if (priceChange < 0) {
+            sign = "<font color='#ff0000'>\u25BC</font>";
+            textColor = Color.RED;
+        } else {
+            sign = "";
+            textColor = Color.GRAY;
+        }
+        mPriceChangeTextView.setText(Html.fromHtml(sign + String.format(Locale.US, " %.2f%%", priceChange < 0 ? -priceChange : priceChange)));
     }
 }

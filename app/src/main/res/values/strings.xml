@@ -9,6 +9,7 @@
     <string name="buy">Buy</string>
     <string name="sell">Sell</string>
 
+    <string name="usd_symbol">USD</string>
     <string name="btc_symbol">BTC</string>
     <string name="eth_symbol">ETH</string>
 
