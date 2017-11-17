@@ -22,7 +22,7 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private OnClickHandler mOnClickHandler;
 
     public interface OnClickHandler {
-        void handleOnClickOrder(Date orderDate, String description, String status, boolean isPast);
+        void handleOnClickOrder(String orderId, Date orderDate, String description, String status, boolean isPast);
         void handleOnClickLoadPastOrders();
     }
 
@@ -77,7 +77,7 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 orderViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        mOnClickHandler.handleOnClickOrder(order.placedDate, order.description, order.status, order.isPast);
+                        mOnClickHandler.handleOnClickOrder(order.orderId, order.placedDate, order.description, order.status, order.isPast);
                     }
                 });
                 break;
@@ -89,7 +89,7 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            messageViewHolder.mMessageTextView.setText("Loading...");
+                            messageViewHolder.mMessageTextView.setText(R.string.loading_text);
                             mOnClickHandler.handleOnClickLoadPastOrders();
                             view.setOnClickListener(null);
                         }

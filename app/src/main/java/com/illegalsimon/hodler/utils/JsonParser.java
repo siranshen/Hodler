@@ -76,6 +76,12 @@ public final class JsonParser {
         return (float) priceObject.getDouble(toSymbol.getName());
     }
 
+    public static boolean isOrderCancelled(String response) throws JSONException {
+        JSONObject responseJson = new JSONObject(response);
+
+        return responseJson.getBoolean("is_cancelled");
+    }
+
     private static boolean isResponseError(JSONObject response) throws JSONException {
         if (response.has(CC_RESPONSE_CODE_KEY)) {
             if (response.getString(CC_RESPONSE_CODE_KEY).equals(CC_RESPONSE_ERROR)) {

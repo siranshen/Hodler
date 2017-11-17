@@ -12,5 +12,6 @@
 
         <TextView
             android:id="@+id/tv_order"
-            style="@style/BaseDashboardLineItemStyle"/>
+            style="@style/BaseDashboardLineItemStyle"
+            android:textColor="@drawable/custom_text"/>
 </LinearLayout>
