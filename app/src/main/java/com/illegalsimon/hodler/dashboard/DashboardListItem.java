@@ -10,10 +10,10 @@ public abstract class DashboardListItem {
     public static final int ORDER = 2;
     public static final int MESSAGE = 3;
 
-    final int mType;
+    final int type;
 
     protected DashboardListItem(int type) {
-        mType = type;
+        this.type = type;
     }
 }
 

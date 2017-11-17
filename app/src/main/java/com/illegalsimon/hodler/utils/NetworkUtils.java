@@ -129,8 +129,7 @@ public final class NetworkUtils {
 
     private static final String HMAC_SHA384 = "HmacSHA384";
 
-    public static String getGeminiPrivateResponseFromUrl(String urlPath, String jsonData) throws IOException, JSONException {
-        JSONObject request = new JSONObject(jsonData);
+    public static String getGeminiPrivateResponseFromUrl(String urlPath, JSONObject request) throws IOException, JSONException {
         request.put("request", urlPath);
         request.put("nonce", getNonce());
         Log.d(TAG, request.toString());
@@ -170,6 +169,10 @@ public final class NetworkUtils {
         } finally {
             connection.disconnect();
         }
+    }
+
+    public static String getGeminiPrivateResponseFromUrl(String urlPath, String jsonData) throws IOException, JSONException {
+        return getGeminiPrivateResponseFromUrl(urlPath, new JSONObject(jsonData));
     }
 
     private static String getNonce() {

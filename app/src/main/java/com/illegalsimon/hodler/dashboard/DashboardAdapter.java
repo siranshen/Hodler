@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.illegalsimon.hodler.R;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -18,9 +19,24 @@ import java.util.Locale;
 public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<DashboardListItem> mListItems;
+    private OnClickHandler mOnClickHandler;
 
-    public DashboardAdapter(List<DashboardListItem> listItems) {
+    public interface OnClickHandler {
+        void handleOnClickOrder(Date orderDate, String description, String status, boolean isPast);
+        void handleOnClickLoadPastOrders();
+    }
+
+    public DashboardAdapter(OnClickHandler onClickHandler) {
+        mOnClickHandler = onClickHandler;
+    }
+
+    public List<DashboardListItem> getListItems() {
+        return mListItems;
+    }
+
+    public void setListItems(List<DashboardListItem> listItems) {
         mListItems = listItems;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -46,21 +62,39 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         switch (viewType) {
             case DashboardListItem.LABEL:
                 LabelViewHolder labelViewHolder = (LabelViewHolder) holder;
-                labelViewHolder.mLabelTextView.setText(((DashboardLabel) mListItems.get(position)).mLabel);
+                labelViewHolder.mLabelTextView.setText(((DashboardLabel) mListItems.get(position)).label);
                 break;
             case DashboardListItem.BALANCE:
                 BalanceViewHolder balanceViewHolder = (BalanceViewHolder) holder;
                 DashboardBalance dashboardBalance = (DashboardBalance) mListItems.get(position);
-                balanceViewHolder.mSymbolTextView.setText(dashboardBalance.mSymbol);
-                balanceViewHolder.mBalanceTextView.setText(String.format(Locale.US, "%s / %s", dashboardBalance.mAvailable, dashboardBalance.mBalance));
+                balanceViewHolder.mSymbolTextView.setText(dashboardBalance.symbol);
+                balanceViewHolder.mBalanceTextView.setText(String.format(Locale.US, "%s / %s", dashboardBalance.available, dashboardBalance.balance));
                 break;
             case DashboardListItem.ORDER:
                 OrderViewHolder orderViewHolder = (OrderViewHolder) holder;
-                orderViewHolder.mOrderTextView.setText(((DashboardOrder) mListItems.get(position)).mDescription);
+                final DashboardOrder order = (DashboardOrder) mListItems.get(position);
+                orderViewHolder.mOrderTextView.setText(order.description);
+                orderViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mOnClickHandler.handleOnClickOrder(order.placedDate, order.description, order.status, order.isPast);
+                    }
+                });
                 break;
             case DashboardListItem.MESSAGE:
-                MessageViewHolder messageViewHolder = (MessageViewHolder) holder;
-                messageViewHolder.mMessageTextView.setText(((DashboardMessage) mListItems.get(position)).mMessage);
+                final MessageViewHolder messageViewHolder = (MessageViewHolder) holder;
+                final DashboardMessage message = (DashboardMessage) mListItems.get(position);
+                messageViewHolder.mMessageTextView.setText(message.message);
+                if (message.isPastOrdersLoader) {
+                    messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            messageViewHolder.mMessageTextView.setText("Loading...");
+                            mOnClickHandler.handleOnClickLoadPastOrders();
+                            view.setOnClickListener(null);
+                        }
+                    });
+                }
                 break;
             default:
                 throw new IllegalArgumentException("View type not supported");
@@ -69,7 +103,7 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public int getItemViewType(int position) {
-        return mListItems.get(position).mType;
+        return mListItems.get(position).type;
     }
 
     @Override
@@ -102,7 +136,8 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         OrderViewHolder(View itemView) {
             super(itemView);
-            mOrderTextView = itemView.findViewById(R.id.tv_order); // TODO: onClickListener
+            mOrderTextView = itemView.findViewById(R.id.tv_order);
+
         }
     }
 

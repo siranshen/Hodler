@@ -23,6 +23,7 @@ import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -220,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
         mLoadingIndicator.setVisibility(View.GONE);
 
         if (data == null || data.getPriceHistory() == null || data.getPriceHistory().length == 0 || data.getCurrentPrice() == -1f || data.getOpenPrice() == -1f) {
-            // TODO: Show Error message
+            Toast.makeText(this, "Failed to load...", Toast.LENGTH_LONG).show();
             return;
         }
 

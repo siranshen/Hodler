@@ -5,10 +5,16 @@ package com.illegalsimon.hodler.dashboard;
  */
 
 public class DashboardMessage extends DashboardListItem {
-    final String mMessage;
+    final String message;
+    final boolean isPastOrdersLoader;
 
     public DashboardMessage(String message) {
+        this(message, false);
+    }
+
+    public DashboardMessage(String message, boolean isPastOrdersLoader) {
         super(DashboardListItem.MESSAGE);
-        mMessage = message;
+        this.message = message;
+        this.isPastOrdersLoader = isPastOrdersLoader;
     }
 }
