@@ -13,6 +13,7 @@
     <string name="usd_symbol">USD</string>
     <string name="btc_symbol">BTC</string>
     <string name="eth_symbol">ETH</string>
+    <string name="xrp_symbol">XRP</string>
 
     <string name="no_data">N/A</string>
 

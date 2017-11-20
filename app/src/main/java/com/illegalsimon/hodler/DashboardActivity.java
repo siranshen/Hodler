@@ -41,6 +41,8 @@ public class DashboardActivity extends AppCompatActivity implements DashboardAda
     private static final int PAST_ORDERS_LOADER_ID = 4;
     private static final int CANCEL_ORDER_LOADER_ID = 5;
     private static final String ORDER_ID_KEY = "ORDER_ID";
+    private static final String TIMESTAMP_KEY = "TIMESTAMP";
+    private static final String LIST_ITEMS_KEY = "LIST_ITEMS";
     private static final String USD = "USD";
     private static final String[] TRADING_SYMBOLS = new String[] { "btcusd", "ethusd", "ethbtc" };
 
@@ -65,8 +67,20 @@ public class DashboardActivity extends AppCompatActivity implements DashboardAda
 
         mDashboardAdapter = new DashboardAdapter(this);
         mRecyclerView.setAdapter(mDashboardAdapter);
-        mDashboardAdapter.setListItems(new ArrayList<DashboardListItem>());
-        getSupportLoaderManager().initLoader(MAIN_LOADER_ID, null, this);
+        if (savedInstanceState != null && System.currentTimeMillis() - savedInstanceState.getLong(TIMESTAMP_KEY) < 2000) {
+            System.out.println("Populating saved data");
+            mDashboardAdapter.setListItems((ArrayList<DashboardListItem>) savedInstanceState.getSerializable(LIST_ITEMS_KEY));
+        } else {
+            mDashboardAdapter.setListItems(new ArrayList<DashboardListItem>());
+            getSupportLoaderManager().initLoader(MAIN_LOADER_ID, null, this);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(TIMESTAMP_KEY, System.currentTimeMillis());
+        outState.putSerializable(LIST_ITEMS_KEY, (ArrayList) mDashboardAdapter.getListItems());
     }
 
     @Override
@@ -142,15 +156,18 @@ public class DashboardActivity extends AppCompatActivity implements DashboardAda
                 }
             };
         } else if (PAST_ORDERS_LOADER_ID == id) {
+            System.out.println("Creating PAST ORDERS loader");
             return new AsyncTaskLoader<String[]>(this) {
 
                 @Override
                 protected void onStartLoading() {
+                    System.out.println("onStartLoading state: " + isAbandoned() + " " + isReset() + " " + isStarted());
                     forceLoad();
                 }
 
                 @Override
                 public String[] loadInBackground() {
+                    System.out.println("Loading past orders");
                     JSONObject jsonRequest = new JSONObject();
                     try {
                         String[] result = new String[TRADING_SYMBOLS.length];
@@ -229,6 +246,7 @@ public class DashboardActivity extends AppCompatActivity implements DashboardAda
                 break;
 
             case PAST_ORDERS_LOADER_ID:
+                getSupportLoaderManager().destroyLoader(PAST_ORDERS_LOADER_ID);
                 try {
                     List<DashboardListItem> listItems = mDashboardAdapter.getListItems();
                     int listSize = listItems.size() - 1;
@@ -253,6 +271,7 @@ public class DashboardActivity extends AppCompatActivity implements DashboardAda
                 break;
 
             case CANCEL_ORDER_LOADER_ID:
+                getSupportLoaderManager().destroyLoader(CANCEL_ORDER_LOADER_ID);
                 try {
                     if (JsonParser.isOrderCancelled(data[0])) {
                         Toast.makeText(this, "Order has been successfully cancelled!", Toast.LENGTH_LONG).show();

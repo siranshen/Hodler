@@ -26,6 +26,7 @@
             android:name=".TradingActivity"
             android:label="@string/activity_trade"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity">
         </activity>
         <activity

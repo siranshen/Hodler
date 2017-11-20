@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
     private static final Map<Integer, Symbol> BUTTON_SYMBOL_MAP = new HashMap<Integer, Symbol>() {{
         put(R.id.btn_btc, Symbol.BTC);
         put(R.id.btn_eth, Symbol.ETH);
+        put(R.id.btn_xrp, Symbol.XRP);
     }};
     private static final Map<Integer, TimeRange> BUTTON_TIME_RANGE_MAP = new HashMap<Integer, TimeRange>() {{
         put(R.id.btn_one_hour, TimeRange.ONE_HOUR);
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
 
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                String priceStr = String.format(Locale.US, "$%.2f", e.getY());
+                String priceStr = formatPrice(e.getY());
                 String dateStr = mDateFormat.format(new Date(((long) e.getX() + base) * 1000));
                 String completeStr = priceStr + " " + dateStr;
                 SpannableString text = new SpannableString(completeStr);
@@ -278,7 +279,9 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
 
     public void onClickBtnTrade(View view) {
         Intent intentTrade = new Intent(this, TradingActivity.class);
-        intentTrade.putExtra(TradingActivity.FROM_SYMBOL_KEY, BUTTON_SYMBOL_MAP.get(mSymbolsGroup.getCheckedRadioButtonId()));
+        Symbol toSymbol = BUTTON_SYMBOL_MAP.get(mSymbolsGroup.getCheckedRadioButtonId());
+        if (!TradingActivity.SUPPORTED_SYMBOLS.contains(toSymbol)) toSymbol = Symbol.ETH;
+        intentTrade.putExtra(TradingActivity.FROM_SYMBOL_KEY, toSymbol);
         intentTrade.putExtra(TradingActivity.TO_SYMBOL_KEY, Symbol.USD);
 
         int btnId = view.getId();
@@ -291,19 +294,19 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<P
     }
 
     private void setPriceViewToCurrent() {
-        mCurrentPriceTextView.setText(String.format(Locale.US, "$%.2f", currentPrice));
-        int textColor = 0;
+        mCurrentPriceTextView.setText(formatPrice(currentPrice));
         String sign;
         if (priceChange > 0) {
             sign = "<font color='#00ff00'>\u25B2</font>";
-            textColor = Color.GREEN;
         } else if (priceChange < 0) {
             sign = "<font color='#ff0000'>\u25BC</font>";
-            textColor = Color.RED;
         } else {
             sign = "";
-            textColor = Color.GRAY;
         }
         mPriceChangeTextView.setText(Html.fromHtml(sign + String.format(Locale.US, " %.2f%%", priceChange < 0 ? -priceChange : priceChange)));
+    }
+
+    private String formatPrice(float price) {
+        return String.format(Locale.US, price < 2f ? "$%.4f" : "$%.2f", price);
     }
 }

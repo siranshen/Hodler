@@ -329,10 +329,8 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
     public void onLoadFinished(Loader<String> loader, String data) {
         Log.d(TAG, data);
         int loaderId = TradingActivity.GEMINI_PRIVATE_LOADER_ID;
-        if (getActivity().getSupportLoaderManager().getLoader(loaderId) != null) {
-            // Destroying loader as it seems to load twice on resume
-            getActivity().getSupportLoaderManager().destroyLoader(loaderId);
-        }
+        // Need to destroy the loader as Android calls it when reopening app
+        getActivity().getSupportLoaderManager().destroyLoader(loaderId);
 
         Toast errorMessage = Toast.makeText(getContext().getApplicationContext(), "Sorry, something went wrong...", Toast.LENGTH_LONG);
         if (data == null) {

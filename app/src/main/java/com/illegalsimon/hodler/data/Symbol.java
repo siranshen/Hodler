@@ -7,6 +7,7 @@ package com.illegalsimon.hodler.data;
 public enum Symbol {
     BTC("BTC"),
     ETH("ETH"),
+    XRP("XRP"),
     USD("USD");
 
     private final String name;
