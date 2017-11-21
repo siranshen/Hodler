@@ -37,6 +37,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 
+import static com.illegalsimon.hodler.DashboardActivity.formatCurrencyAmount;
+
 public class TradingFragment extends Fragment implements TextWatcher, AdapterView.OnItemSelectedListener, LoaderManager.LoaderCallbacks<String> {
     private static final String TAG = TradingFragment.class.getSimpleName();
 
@@ -46,6 +48,7 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
     private static final String URL_KEY = "URL";
     private static final String JSON_KEY = "JSON";
 
+    private static final double FEE_RATE = 0.0025;
     private static final int CRYPTO_DECIMAL_PLACES = 6;
     private static final String LEFT_ARROW = "<-";
     private static final String RIGHT_ARROW = "->";
@@ -168,8 +171,8 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
             Toast.makeText(getContext().getApplicationContext(), "Input cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
-        Double priceDouble = Double.valueOf(price);
-        Double quantityDouble = round(Double.valueOf(quantity), CRYPTO_DECIMAL_PLACES);
+        double priceDouble = Double.valueOf(price);
+        double quantityDouble = round(Double.valueOf(quantity), CRYPTO_DECIMAL_PLACES);
         if (priceDouble <= 0 || quantityDouble <= 0) {
             Toast.makeText(getContext().getApplicationContext(), "Improper order", Toast.LENGTH_SHORT).show();
             return;
@@ -179,11 +182,11 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
         price = mPriceEditText.getText().toString();
         String[] tradingPair = BASE_TRADING_PAIRS[mTradingPairSpinner.getSelectedItemPosition()];
         String orderType = mOrderTypeSpinner.getSelectedItem().toString();
+        String fee = formatCurrencyAmount(tradingPair[1], String.valueOf(round(Double.valueOf(price) * quantityDouble * FEE_RATE, getDecimalPlaces())));
 
-        String confirmationMessage = String.format(Locale.US, "You are about to place %s %s %s order for %s %s at a price of %s per %s.",
-                getArticle(orderType), orderType, isBuy ? "buy" : "sell",
-                mQuantityEditText.getText().toString(), tradingPair[0],
-                tradingPair[1].equals(Symbol.USD.getName()) ? "$" + price : price + " " + tradingPair[1], tradingPair[0]);
+        String confirmationMessage = String.format(Locale.US, "You are about to place %s %s %s order for %s %s at a price of %s per %s with fee %s.",
+                getArticle(orderType), orderType, isBuy ? "buy" : "sell", mQuantityEditText.getText().toString(), tradingPair[0],
+                formatCurrencyAmount(tradingPair[1], price), tradingPair[0], fee);
 
         new AlertDialog.Builder(getContext(), R.style.CustomAlertDialogStyle).setTitle("Placing order").setMessage(confirmationMessage)
                 .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
@@ -257,7 +260,7 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
         if (price.isEmpty() || quantity.isEmpty())
             return;
 
-        int decimalPlaces = mTradingPairSpinner.getSelectedItemPosition() == 2 ? CRYPTO_DECIMAL_PLACES : 2;
+        int decimalPlaces = getDecimalPlaces();
 
         if (editable == mPriceEditText.getText()) {
             Double totalDouble = Double.valueOf(price) * Double.valueOf(quantity);
@@ -271,6 +274,10 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
             setEditTextViewText(mPriceEditText, String.valueOf(priceDouble));
             setEditTextViewText(mQuantityEditText, String.valueOf(round(Double.valueOf(total) / priceDouble, CRYPTO_DECIMAL_PLACES)));
         }
+    }
+
+    private int getDecimalPlaces() {
+        return mTradingPairSpinner.getSelectedItemPosition() == 2 ? CRYPTO_DECIMAL_PLACES : 2;
     }
 
     private void setEditTextViewText(EditText editText, String text) {

@@ -362,7 +362,7 @@ public class DashboardActivity extends AppCompatActivity implements DashboardAda
         return word.substring(0, 1).toUpperCase() + word.substring(1);
     }
 
-    private static String formatCurrencyAmount(String currency, String number) {
+    public static String formatCurrencyAmount(String currency, String number) {
         if (USD.equals(currency)) {
             return "$" + number;
         } else {
