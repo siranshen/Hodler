@@ -73,6 +73,8 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
     private Button mPlaceOrderBtn;
     private OnTradingFragmentInteractionListener mListener;
 
+    private double lastPrice = -1;
+
     public TradingFragment() {
         // Required empty public constructor
     }
@@ -180,6 +182,7 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
         mQuantityEditText.setText(String.valueOf(quantityDouble)); // This will trigger TextWatcher
 
         price = mPriceEditText.getText().toString();
+        priceDouble = Double.valueOf(price);
         String[] tradingPair = BASE_TRADING_PAIRS[mTradingPairSpinner.getSelectedItemPosition()];
         String orderType = mOrderTypeSpinner.getSelectedItem().toString();
         String fee = formatCurrencyAmount(tradingPair[1], String.valueOf(round(Double.valueOf(price) * quantityDouble * FEE_RATE, getDecimalPlaces())));
@@ -187,6 +190,14 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
         String confirmationMessage = String.format(Locale.US, "You are about to place %s %s %s order for %s %s at a price of %s per %s with fee %s.",
                 getArticle(orderType), orderType, isBuy ? "buy" : "sell", mQuantityEditText.getText().toString(), tradingPair[0],
                 formatCurrencyAmount(tradingPair[1], price), tradingPair[0], fee);
+
+        if (lastPrice > 0) {
+            if (isBuy && lastPrice < priceDouble) {
+                confirmationMessage += "\n\nNote: Your buy price is set above last traded price.";
+            } else if (!isBuy && lastPrice > priceDouble) {
+                confirmationMessage += "\n\nNote: Your sell price is set below last traded price.";
+            }
+        }
 
         new AlertDialog.Builder(getContext(), R.style.CustomAlertDialogStyle).setTitle("Placing order").setMessage(confirmationMessage)
                 .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
@@ -374,6 +385,8 @@ public class TradingFragment extends Fragment implements TextWatcher, AdapterVie
     }
 
     public void updateLastPrice(String price) {
+        lastPrice = Double.valueOf(price);
+
         String completeStr = price + " " + new SimpleDateFormat("M/d/YYYY HH:mm:ss", Locale.US).format(new Date());
         SpannableString text = new SpannableString(completeStr);
         text.setSpan(new RelativeSizeSpan(0.8f), price.length(), completeStr.length(), 0);
